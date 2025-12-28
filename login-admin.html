@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administrador - Control Center</title>
+    <link rel="stylesheet" href="css/login-admin.css">
+</head>
+</head>
+<body>
+    <button class="theme-toggle" id="theme-toggle" title="Cambiar modo">🌙</button>
+
+    <div class="login-container">
+        <div class="login-header">
+            <span class="logo-emoji">👨‍💼</span>
+            <h1 class="company-name">Control Center</h1>
+            <p class="login-subtitle">Panel Administrativo</p>
+            <div class="badge-admin">⭐ Acceso Administrativo</div>
+        </div>
+
+        <form id="admin-login-form">
+            <div class="error-message" id="error-message"></div>
+
+            <div class="form-group">
+                <label for="admin-id">🆔 Cédula de Administrador</label>
+                <input type="text" id="admin-id" placeholder="___-_______-_" maxlength="13" required>
+            </div>
+
+            <div class="form-group">
+                <label for="admin-password">🔐 Contraseña</label>
+                <input type="password" id="admin-password" placeholder="Contraseña" required>
+            </div>
+
+            <button type="submit" class="btn-login">Acceder al Panel</button>
+        </form>
+
+        <div class="footer-text">
+            ¿Eres empleado? 
+            <a href="login-empleado.html" class="footer-link">Ir a Portal de Empleados</a>
+        </div>
+
+        <div class="features">
+            <div class="feature-box">
+                <div class="feature-icon">👥</div>
+                <div class="feature-text">Gestión de Empleados</div>
+            </div>
+            <div class="feature-box">
+                <div class="feature-icon">📊</div>
+                <div class="feature-text">Reportes y Análisis</div>
+            </div>
+            <div class="feature-box">
+                <div class="feature-icon">💰</div>
+                <div class="feature-text">Control de Nómina</div>
+            </div>
+            <div class="feature-box">
+                <div class="feature-icon">⚙️</div>
+                <div class="feature-text">Configuración</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { login, formatCedula, isValidCedula, showError, hideError } from './js/shared/auth.js';
+
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        const cedulaInput = document.getElementById('admin-id');
+
+        // Auto-formato de cédula dominicana (XXX-XXXXXXX-X)
+        cedulaInput.addEventListener('input', (e) => {
+            let valor = e.target.value.replace(/\D/g, '');
+            if (valor.length > 11) valor = valor.slice(0, 11);
+            
+            let formateado = '';
+            if (valor.length > 0) formateado = valor.slice(0, 3);
+            if (valor.length > 3) formateado += '-' + valor.slice(3, 10);
+            if (valor.length > 10) formateado += '-' + valor.slice(10, 11);
+            
+            e.target.value = formateado;
+        });
+
+        // Cargar tema guardado
+        const savedTheme = localStorage.getItem('admin-theme') || 'light';
+        if (savedTheme === 'dark') {
+            body.classList.add('dark-mode');
+            themeToggle.textContent = '☀️';
+        }
+
+        // Toggle de tema
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            const isDark = body.classList.contains('dark-mode');
+            localStorage.setItem('admin-theme', isDark ? 'dark' : 'light');
+            themeToggle.textContent = isDark ? '☀️' : '🌙';
+        });
+
+        // Login
+        document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('admin-id').value;
+            const password = document.getElementById('admin-password').value;
+            const errorDiv = document.getElementById('error-message');
+
+            hideError(errorDiv);
+
+            // Validar cédula
+            if (!isValidCedula(id)) {
+                showError(errorDiv, '❌ Cédula inválida. Debe tener 11 dígitos numéricos');
+                return;
+            }
+
+            // Formatear cédula
+            const formattedId = formatCedula(id);
+
+            // Intentar login
+            const user = await login(formattedId, password);
+
+            if (user && user.role === 'admin') {
+                window.location.href = 'admin-dashboard.html';
+            } else {
+                showError(errorDiv, '❌ Credenciales inválidas o acceso no autorizado');
+            }
+        });
+    </script>
+</body>
+</html>

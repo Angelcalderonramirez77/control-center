@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - Control Center</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/portal.css">
+    <link rel="stylesheet" href="css/employee-dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script type="module" src="js/employees-api.js"></script>
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <h1>👤 Mi Perfil</h1>
+            <nav>
+                <button id="logout-btn" class="profile-logout-btn">🚪 Cerrar Sesión</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Perfil del Empleado -->
+        <section class="employee-profile">
+            <img id="profile-photo" src="" alt="Foto de perfil" class="profile-photo">
+            <div>
+                <h2 id="profile-name"></h2>
+                <div class="profile-info">
+                    <div class="info-block">
+                        <div class="info-label">📍 Posición</div>
+                        <div class="info-value" id="profile-position"></div>
+                    </div>
+                    <div class="info-block">
+                        <div class="info-label">🆔 ID de Empleado</div>
+                        <div class="info-value" id="profile-id"></div>
+                    </div>
+                    <div class="info-block">
+                        <div class="info-label">👨‍💼 Rol</div>
+                        <div class="info-value" id="profile-role"></div>
+                    </div>
+                    <div class="info-block">
+                        <div class="info-label">📅 Fecha de Inicio</div>
+                        <div class="info-value" id="profile-start-date"></div>
+                    </div>
+                    <div class="info-block">
+                        <div class="info-label">💰 Salario Mensual</div>
+                        <div class="info-value" id="profile-salary" style="color: #27ae60;"></div>
+                    </div>
+                    <div class="info-block">
+                        <div class="info-label">💵 Salario Diario</div>
+                        <div class="info-value" id="profile-daily-wage" style="color: #e74c3c;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Estadísticas -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <h4>📊 Días Trabajados</h4>
+                <p id="stat-days-worked">0</p>
+            </div>
+            <div class="stat-card">
+                <h4>⏱️ Horas/Día</h4>
+                <p id="stat-hours-per-day">0</p>
+            </div>
+            <div class="stat-card">
+                <h4>💲 Ingreso Total</h4>
+                <p id="stat-total-income">$0</p>
+            </div>
+            <div class="stat-card">
+                <h4>📋 Registros de Ingreso</h4>
+                <p id="stat-income-records">0</p>
+            </div>
+        </section>
+
+        <!-- Gráfico de Ingresos -->
+        <section class="income-section">
+            <h2>📈 Tendencia de Ingresos</h2>
+            <div class="chart-container">
+                <canvas id="income-trend-chart"></canvas>
+            </div>
+        </section>
+
+        <!-- Tabla de Ingresos -->
+        <section class="income-section">
+            <h2>💼 Registro de Ingresos Recientes</h2>
+            <table class="income-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Horas Trabajadas</th>
+                        <th>Ingreso del Día</th>
+                    </tr>
+                </thead>
+                <tbody id="income-table-body">
+                    <tr>
+                        <td colspan="3" style="text-align: center; color: #999;">Cargando datos...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+
+        // Funciones auxiliares
+        function calculateDaysWorked(startDate) {
+            const start = new Date(startDate);
+            const today = new Date();
+            const diffTime = Math.abs(today - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+
+        function generateIncomeChartData(incomeData) {
+            const labels = incomeData.map(d => new Date(d.income_date).toLocaleDateString());
+            const data = incomeData.map(d => parseFloat(d.amount));
+            
+            return {
+                labels: labels,
+                datasets: [{
+                    label: 'Ingreso Diario',
+                    data: data,
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            };
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('es-DO', {
+                style: 'currency',
+                currency: 'DOP'
+            }).format(amount);
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // Función para obtener detalles del empleado
+        async function getEmployeeDetails(employeeId) {
+            try {
+                const response = await fetch(`${API_URL}/employees/${employeeId}/details`);
+                if (!response.ok) throw new Error('Empleado no encontrado');
+                return await response.json();
+            } catch (error) {
+                console.error('Error al obtener detalles:', error);
+                return null;
+            }
+        }
+
+        // Función para obtener ingresos del empleado
+        async function getEmployeeIncome(employeeId) {
+            try {
+                const response = await fetch(`${API_URL}/employees/${employeeId}/income`);
+                return await response.json();
+            } catch (error) {
+                console.error('Error al obtener ingresos:', error);
+                return [];
+            }
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verificar sesión
+            const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            console.log('Usuario actual:', currentUser);
+
+            // Logout
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                sessionStorage.removeItem('currentUser');
+                window.location.href = 'login.html';
+            });
+
+            // Cargar datos del empleado
+            const details = await getEmployeeDetails(currentUser.id);
+            const income = await getEmployeeIncome(currentUser.id);
+
+            console.log('Detalles obtenidos:', details);
+            console.log('Ingresos obtenidos:', income);
+
+            if (!details) {
+                document.body.innerHTML = '<p style="padding: 20px; color: red;">No se encontraron datos del empleado</p>';
+                return;
+            }
+
+            const daysWorked = calculateDaysWorked(details.start_date);
+
+            // Llenar perfil
+            document.getElementById('profile-photo').src = details.photo_url || 'https://via.placeholder.com/200';
+            document.getElementById('profile-name').textContent = details.name;
+            document.getElementById('profile-position').textContent = details.position || 'N/A';
+            document.getElementById('profile-id').textContent = details.id;
+            document.getElementById('profile-role').textContent = details.role;
+            document.getElementById('profile-start-date').textContent = formatDate(details.start_date);
+            document.getElementById('profile-salary').textContent = formatCurrency(details.salary);
+            document.getElementById('profile-daily-wage').textContent = formatCurrency(details.daily_wage);
+
+            // Llenar estadísticas
+            document.getElementById('stat-days-worked').textContent = daysWorked;
+            document.getElementById('stat-hours-per-day').textContent = details.hours_per_day + ' hrs';
+            document.getElementById('stat-total-income').textContent = formatCurrency(details.total_income);
+            document.getElementById('stat-income-records').textContent = details.total_income_records;
+
+            // Gráfico de ingresos
+            if (income && income.length > 0) {
+                const chartData = generateIncomeChartData(income);
+                const ctx = document.getElementById('income-trend-chart');
+                if (ctx) {
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: chartData,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: true }
+                            },
+                            scales: {
+                                y: { beginAtZero: true }
+                            }
+                        }
+                    });
+                }
+
+                // Tabla de ingresos
+                const tableBody = document.getElementById('income-table-body');
+                tableBody.innerHTML = '';
+                income.forEach(record => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formatDate(record.income_date)}</td>
+                        <td>${record.hours_worked} hrs</td>
+                        <td style="color: #27ae60; font-weight: 600;">${formatCurrency(record.amount)}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } else {
+                const tableBody = document.getElementById('income-table-body');
+                tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #999;">Sin registros de ingresos</td></tr>';
+            }
+        });
+    </script>
+</body>
+</html>

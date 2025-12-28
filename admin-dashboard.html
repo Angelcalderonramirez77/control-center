@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Control Center</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/portal.css">
+    <link rel="stylesheet" href="css/admin-dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+</head>
+<body>
+    <header class="main-header">
+        <div class="container header-container">
+            <h1 class="header-title">🏢 Panel de Administración</h1>
+            
+            <div class="admin-info-center">
+                <div class="admin-info-content">
+                    <span class="admin-badge">👤 ADM</span>
+                    <span class="admin-name" id="admin-name-display">-</span>
+                </div>
+            </div>
+            
+            <nav class="navbar-admin">
+                <button id="view-employees-btn" class="btn-nav" type="button" title="Ver lista de empleados" aria-label="Ver Empleados">
+                    <span class="btn-icon" aria-hidden="true">👥</span>
+                    <span class="btn-label">Ver Empleados</span>
+                </button>
+                <button id="add-employee-btn-nav" class="btn-nav btn-primary" type="button" title="Agregar nuevo empleado" aria-label="Agregar Empleado">
+                    <span class="btn-icon" aria-hidden="true">➕</span>
+                    <span class="btn-label">Agregar Empleado</span>
+                </button>
+                <button id="reports-btn" class="btn-nav" type="button" title="Centro de Reportes" aria-label="Reportes">
+                    <span class="btn-icon" aria-hidden="true">📊</span>
+                    <span class="btn-label">Reportes</span>
+                </button>
+                <button id="logout-btn" class="btn-nav btn-logout btn-icon-only" type="button" title="Cerrar sesión" aria-label="Cerrar Sesión">
+                    <span class="btn-icon" aria-hidden="true">🚪</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Estadísticas -->
+        <section id="stats-section" class="stats-container">
+            <div class="stat-card">
+                <h4>Empleados Totales</h4>
+                <p id="total-employees">0</p>
+            </div>
+            <div class="stat-card">
+                <h4>Salario Promedio</h4>
+                <p id="average-salary">$0</p>
+            </div>
+            <div class="stat-card">
+                <h4>Masa Salarial</h4>
+                <p id="total-payroll">$0</p>
+            </div>
+        </section>
+
+        <!-- Búsqueda -->
+        <section style="margin: 30px 0; background: white; padding: 20px; border-radius: 10px;">
+            <div>
+                <input type="text" id="search-input" placeholder="🔍 Buscar empleado por nombre o cédula..." 
+                       style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px;">
+            </div>
+        </section>
+
+        <!-- Lista de Empleados -->
+        <section id="employees-section">
+            <h2>Gestión de Empleados</h2>
+            <div id="employees-container"></div>
+        </section>
+
+        <!-- Gráficos -->
+        <section id="charts-section" style="margin-top: 40px;">
+            <div class="charts-grid">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: #000000;">Distribución de Salarios</h3>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="chart-type-btn active" data-chart-type="bar" onclick="changeSalaryChartType('bar')" title="Gráfico de barras" style="padding: 8px 12px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">📊 Barras</button>
+                            <button class="chart-type-btn" data-chart-type="line" onclick="changeSalaryChartType('line')" title="Gráfico de línea" style="padding: 8px 12px; background: #e0e0e0; color: #333; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">📈 Línea</button>
+                            <button class="chart-type-btn" data-chart-type="area" onclick="changeSalaryChartType('area')" title="Gráfico de área" style="padding: 8px 12px; background: #e0e0e0; color: #333; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">📉 Área</button>
+                            <button class="chart-type-btn" data-chart-type="pie" onclick="changeSalaryChartType('pie')" title="Gráfico circular" style="padding: 8px 12px; background: #e0e0e0; color: #333; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">🥧 Circular</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="salary-chart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: #000000;">Ganancias Mensuales</h3>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="chart-type-btn active" data-chart-type="line" onclick="changeProfitsChartType('line')" title="Gráfico de línea" style="padding: 8px 12px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">📈 Línea</button>
+                            <button class="chart-type-btn" data-chart-type="bar" onclick="changeProfitsChartType('bar')" title="Gráfico de barras" style="padding: 8px 12px; background: #e0e0e0; color: #333; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">📊 Barras</button>
+                            <button class="chart-type-btn" data-chart-type="area" onclick="changeProfitsChartType('area')" title="Gráfico de área" style="padding: 8px 12px; background: #e0e0e0; color: #333; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">📉 Área</button>
+                            <button class="chart-type-btn" data-chart-type="pie" onclick="changeProfitsChartType('pie')" title="Gráfico circular" style="padding: 8px 12px; background: #e0e0e0; color: #333; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">🥧 Circular</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="profits-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal para Crear/Editar Empleado -->
+    <div id="employee-modal" class="modal">
+        <div class="modal-content modal-large">
+            <span class="close">&times;</span>
+            <h2 id="modal-title">Agregar Empleado</h2>
+            <form id="employee-form" class="modal-content-two-col">
+                <div>
+                    <div class="form-group">
+                        <label>Cédula de Identidad *</label>
+                        <input type="text" id="employee-code" placeholder="___-_______-_" maxlength="13" pattern="\d{3}-\d{7}-\d" title="Formato: 000-0000000-0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre Completo *</label>
+                        <input type="text" id="employee-name-modal" placeholder="Nombre completo" required>
+                    </div>
+                    <!-- Contraseña se genera automáticamente desde la cédula -->
+                    <input type="hidden" id="employee-password">
+                    <div class="form-group">
+                        <div style="background: #e8f4f8; padding: 10px; border-radius: 6px; border-left: 3px solid #667eea; margin-bottom: 10px;">
+                            <small style="color: #1976D2;">🔐 <strong>Contraseña:</strong> Se asignará automáticamente usando la cédula de identidad</small>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Rol *</label>
+                        <select id="employee-role" required>
+                            <option value="">Selecciona rol</option>
+                            <option value="employee">Empleado</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Salario Mensual (RD$) *</label>
+                        <input type="number" id="employee-salary-modal" placeholder="Mínimo: 30,000" required min="30000">
+                    </div>
+                </div>
+                <div>
+                    <div class="form-group">
+                        <label>Posición</label>
+                        <input type="text" id="employee-position" placeholder="Ej: Desarrollador">
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Inicio</label>
+                        <input type="date" id="employee-start-date">
+                    </div>
+                    <div class="form-group">
+                        <label>Salario Diario</label>
+                        <input type="number" id="employee-daily-wage" placeholder="Se calcula automáticamente" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Horas por Día</label>
+                        <input type="number" id="employee-hours-per-day" value="8" min="1" max="24">
+                    </div>
+                </div>
+                <div style="grid-column: 1 / -1; display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" id="cancel-btn" class="btn" style="background: #95a5a6;">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Empleado</button>
+                </div>
+            </form>
+            <input type="hidden" id="employee-id-hidden">
+        </div>
+    </div>
+
+    <script type="module" src="js/admin-dashboard.js"></script>
+</body>
+</html>

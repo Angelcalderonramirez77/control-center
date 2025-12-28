@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro de Reportes - Control Center Pro</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/portal.css">
+    <link rel="stylesheet" href="css/reports.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="container header-container">
+            <h1>📊 Centro de Reportes</h1>
+            <nav class="navbar-admin">
+                <button id="back-to-admin" class="btn-nav">← Volver al Panel</button>
+                <button id="logout-btn" class="btn-nav btn-logout">🚪 Cerrar Sesión</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Tabs de Reportes -->
+        <div class="reports-tabs">
+            <button class="tab-btn active" data-tab="payroll">📋 Nómina</button>
+            <button class="tab-btn" data-tab="payments">💰 Pagos</button>
+            <button class="tab-btn" data-tab="audit">🔍 Auditoría</button>
+            <button class="tab-btn" data-tab="analytics">📈 Análisis</button>
+            <button class="tab-btn" data-tab="withholdings">💸 Retenciones</button>
+        </div>
+
+        <!-- TAB 1: NÓMINA -->
+        <div id="payroll-tab" class="tab-content active">
+            <div class="card">
+                <h2>Reportes de Nómina</h2>
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <label>Mes y Año:</label>
+                        <input type="month" id="payroll-month" value="">
+                    </div>
+                    <div class="filter-group">
+                        <label>Empleado (Opcional):</label>
+                        <input type="text" id="payroll-employee" placeholder="___-_______-_" maxlength="13">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button id="generate-pdf-btn" class="btn btn-primary">📄 Generar PDF</button>
+                    <button id="generate-excel-btn" class="btn btn-success">📊 Exportar Excel</button>
+                    <button id="view-payroll-btn" class="btn">👁️ Vista Previa</button>
+                </div>
+                <div id="payroll-preview" class="preview-section" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- TAB 2: PAGOS -->
+        <div id="payments-tab" class="tab-content" style="display: none;">
+            <div class="card">
+                <h2>Historial de Pagos</h2>
+                <div style="background: #e8f4f8; padding: 12px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196F3;">
+                    <p style="margin: 0; font-size: 13px; color: #1976D2;">
+                        <strong>ℹ️ Períodos de Pago:</strong> En República Dominicana, los salarios se pagan entre el 26 del mes anterior y el 5 del mes actual. 
+                        Si ingresó el día 15, su próximo pago será el día 15 del siguiente mes (cada 30 días).
+                    </p>
+                </div>
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <label>Fecha Desde:</label>
+                        <input type="date" id="payments-from-date">
+                    </div>
+                    <div class="filter-group">
+                        <label>Fecha Hasta:</label>
+                        <input type="date" id="payments-to-date">
+                    </div>
+                    <div class="filter-group">
+                        <label>Empleado:</label>
+                        <input type="text" id="payments-employee" placeholder="___-_______-_" maxlength="13">
+                    </div>
+                </div>
+                <button id="search-payments-btn" class="btn btn-primary">🔍 Buscar</button>
+                <div id="payments-results" class="results-section"></div>
+            </div>
+        </div>
+
+        <!-- TAB 3: AUDITORÍA -->
+        <div id="audit-tab" class="tab-content" style="display: none;">
+            <div class="card">
+                <h2>Registro de Auditoría</h2>
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <label>Tipo de Acción:</label>
+                        <select id="audit-action">
+                            <option value="">Todas</option>
+                            <option value="CREATE">Crear</option>
+                            <option value="UPDATE">Actualizar</option>
+                            <option value="DELETE">Eliminar</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Fecha Desde:</label>
+                        <input type="date" id="audit-from-date">
+                    </div>
+                    <div class="filter-group">
+                        <label>Fecha Hasta:</label>
+                        <input type="date" id="audit-to-date">
+                    </div>
+                </div>
+                <button id="load-audit-btn" class="btn btn-primary">📋 Cargar</button>
+                <div id="audit-results" class="results-section"></div>
+            </div>
+        </div>
+
+        <!-- TAB 4: ANÁLISIS -->
+        <div id="analytics-tab" class="tab-content" style="display: none;">
+            <div class="card">
+                <h2>Análisis de Crecimiento Salarial</h2>
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <label>Rango de Meses:</label>
+                        <input type="month" id="analytics-start-month">
+                        <span>hasta</span>
+                        <input type="month" id="analytics-end-month">
+                    </div>
+                </div>
+                <button id="load-analytics-btn" class="btn btn-primary">📊 Generar Análisis</button>
+                <div id="analytics-results" class="results-section"></div>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <h2>Proyección de Nómina</h2>
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <label>Proyectar para:</label>
+                        <input type="month" id="projection-month">
+                    </div>
+                </div>
+                <button id="project-payroll-btn" class="btn btn-primary">🔮 Proyectar</button>
+                <div id="projection-results" class="results-section"></div>
+            </div>
+        </div>
+
+        <!-- TAB 5: RETENCIONES -->
+        <div id="withholdings-tab" class="tab-content" style="display: none;">
+            <div class="card">
+                <h2>Cálculo de Retenciones (ISR, AFP, SFS)</h2>
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <label>Empleado:</label>
+                        <input type="text" id="withholdings-employee" placeholder="___-_______-_" maxlength="13">
+                    </div>
+                    <div class="filter-group">
+                        <label>Salario:</label>
+                        <input type="number" id="withholdings-salary" placeholder="Monto en RD$" min="0" step="0.01">
+                    </div>
+                </div>
+                <button id="calculate-withholdings-btn" class="btn btn-primary">💰 Calcular</button>
+                <div id="withholdings-results" class="results-section"></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script type="module" src="js/reports.js"></script>
+</body>
+</html>

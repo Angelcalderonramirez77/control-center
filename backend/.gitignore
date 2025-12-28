@@ -1,0 +1,33 @@
+# Dependencias
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Variables de entorno
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Resultados de pruebas
+coverage/
+.nyc_output/
+
+# Caché
+.cache/
+dist/
+build/
